@@ -17,7 +17,15 @@ func startRepl() {
 			clean_user_input := cleanInput(scanner.Text())
 
 			if len(clean_user_input) > 0 {
-				fmt.Printf("Your command was: %s\n", clean_user_input[0])
+				if command, ok := getCommands()[clean_user_input[0]]; ok {
+					err := command.callback()
+
+					if err != nil {
+						fmt.Println(err)
+					}
+				} else {
+					fmt.Println("Unknown command")
+				}
 			}
 		}
 	}

@@ -21,32 +21,49 @@ type LocationAreas struct {
 	} `json:"results"`
 }
 
-func GetLocationAreas(pageUrl *string) (LocationAreas, error) {
+func GetLocationAreas(pageUrl *string, cache *Cache) (LocationAreas, error) {
 	url := baseURL
 	if pageUrl != nil {
 		url = *pageUrl
 	}
 
+	location_areas := LocationAreas{}
+
+	//check the cache
+	val, ok := cache.Get(url)
+	if ok {
+		fmt.Println("+++ cache hit +++")
+
+		err := json.Unmarshal(val, &location_areas)
+		if err != nil {
+			return location_areas, err
+		}
+
+		return location_areas, nil
+	}
+
+	fmt.Println("--- cache miss ---")
 	res, err := http.Get(url)
 	if err != nil {
-		return LocationAreas{}, err
+		return location_areas, err
 	}
 
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		err = fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-		return LocationAreas{}, err
+		return location_areas, err
 	}
 	if err != nil {
-		return LocationAreas{}, err
+		return location_areas, err
 	}
 
-	location_areas := LocationAreas{}
 	err = json.Unmarshal(body, &location_areas)
 	if err != nil {
-		return LocationAreas{}, err
+		return location_areas, err
 	}
 
+	//add to cache
+	cache.Add(url, body)
 	return location_areas, nil
 }

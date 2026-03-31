@@ -3,13 +3,18 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/RyanTarnowski/pokedexcli/internal/pokeapi"
 	"os"
 	"strings"
+	"time"
 )
 
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := config{}
+	const interval = 5 * time.Minute
+	cache := pokeapi.NewCache(interval)
+	cfg.cache = cache
 
 	for {
 		fmt.Print("Pokedex > ")

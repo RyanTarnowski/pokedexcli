@@ -24,7 +24,13 @@ func startRepl() {
 
 			if len(clean_user_input) > 0 {
 				if command, ok := getCommands()[clean_user_input[0]]; ok {
-					err := command.callback(&cfg)
+
+					args := []string{}
+					if len(clean_user_input) > 1 {
+						args = clean_user_input[1:]
+					}
+
+					err := command.callback(&cfg, args...)
 
 					if err != nil {
 						fmt.Println(err)

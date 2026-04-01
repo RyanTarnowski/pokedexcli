@@ -1,15 +1,17 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/RyanTarnowski/pokedexcli/internal/pokeapi"
 	"os"
+
+	"github.com/RyanTarnowski/pokedexcli/internal/pokeapi"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 type config struct {
@@ -40,17 +42,22 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the previous location areas",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays Pokemon of queried location area",
+			callback:    commandExplore,
+		},
 	}
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args ...string) error {
 	fmt.Print("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args ...string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Printf("Usage:\n\n")
 	for _, command := range getCommands() {
@@ -60,7 +67,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args ...string) error {
 	location_areas, err := pokeapi.GetLocationAreas(cfg.next, cfg.cache)
 	if err != nil {
 		return err
@@ -76,7 +83,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, args ...string) error {
 	if cfg.previous == nil {
 		fmt.Println("You're on the first page")
 		return nil
@@ -92,6 +99,26 @@ func commandMapb(cfg *config) error {
 
 	for _, la := range location_areas.Results {
 		fmt.Println(la.Name)
+	}
+
+	return nil
+}
+
+func commandExplore(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return errors.New("you have to enter a location name")
+	}
+
+	area_name := args[0]
+	location_area_info, err := pokeapi.GetLocationAreaInfo(&area_name, cfg.cache)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %s...\n", area_name)
+	fmt.Println("Found Pokemon:")
+	for _, pe := range location_area_info.PokemonEncounters {
+		fmt.Printf(" - %s\n", pe.Pokemon.Name)
 	}
 
 	return nil

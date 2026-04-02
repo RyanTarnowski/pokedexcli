@@ -13,8 +13,8 @@ func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := config{}
 	const interval = 5 * time.Minute
-	cache := pokeapi.NewCache(interval)
-	cfg.cache = cache
+	cfg.cache = pokeapi.NewCache(interval)
+	cfg.caughtPokemon = make(map[string]pokeapi.PokemonInfo)
 
 	for {
 		fmt.Print("Pokedex > ")

@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-
 	"github.com/RyanTarnowski/pokedexcli/internal/pokeapi"
+	"math/rand/v2"
+	"os"
 )
 
 type cliCommand struct {
@@ -15,9 +15,10 @@ type cliCommand struct {
 }
 
 type config struct {
-	next     *string
-	previous *string
-	cache    *pokeapi.Cache
+	next          *string
+	previous      *string
+	cache         *pokeapi.Cache
+	caughtPokemon map[string]pokeapi.PokemonInfo
 }
 
 func getCommands() map[string]cliCommand {
@@ -46,6 +47,11 @@ func getCommands() map[string]cliCommand {
 			name:        "explore",
 			description: "Displays Pokemon of queried location area",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Attempt to catch a Pokemon",
+			callback:    commandCatch,
 		},
 	}
 }
@@ -119,6 +125,33 @@ func commandExplore(cfg *config, args ...string) error {
 	fmt.Println("Found Pokemon:")
 	for _, pe := range location_area_info.PokemonEncounters {
 		fmt.Printf(" - %s\n", pe.Pokemon.Name)
+	}
+
+	return nil
+}
+
+func commandCatch(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return errors.New("you have to enter a pokemon name to catch it")
+	}
+
+	pokemon_name := args[0]
+	pokemon_info, err := pokeapi.GetPokemonInfo(&pokemon_name, cfg.cache)
+	if err != nil {
+		return err
+	}
+
+	catch_threshold := 50
+	catch_chance := rand.IntN(pokemon_info.BaseExperience)
+
+	//fmt.Printf("Catch chance: %v\n", catch_chance)
+	//fmt.Printf("BaseExperience %v\n", pokemon_info.BaseExperience)
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon_name)
+	if catch_chance == pokemon_info.BaseExperience || catch_chance < catch_threshold {
+		fmt.Printf("%s was caught!\n", pokemon_name)
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon_name)
 	}
 
 	return nil

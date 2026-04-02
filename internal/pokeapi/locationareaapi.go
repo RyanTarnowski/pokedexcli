@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	baseURL = "https://pokeapi.co/api/v2/location-area/"
+	locationareabaseURL = "https://pokeapi.co/api/v2/location-area/"
 )
 
 type LocationAreas struct {
@@ -75,7 +75,7 @@ type LocationAreaInfo struct {
 }
 
 func GetLocationAreas(pageUrl *string, cache *Cache) (LocationAreas, error) {
-	url := baseURL
+	url := locationareabaseURL
 	if pageUrl != nil {
 		url = *pageUrl
 	}
@@ -122,7 +122,7 @@ func GetLocationAreas(pageUrl *string, cache *Cache) (LocationAreas, error) {
 }
 
 func GetLocationAreaInfo(LocationArea *string, cache *Cache) (LocationAreaInfo, error) {
-	url := baseURL + *LocationArea
+	url := locationareabaseURL + *LocationArea
 
 	location_area_info := LocationAreaInfo{}
 

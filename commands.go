@@ -53,6 +53,11 @@ func getCommands() map[string]cliCommand {
 			description: "Attempt to catch a Pokemon",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a caught pokemon",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -150,8 +155,35 @@ func commandCatch(cfg *config, args ...string) error {
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon_name)
 	if catch_chance == pokemon_info.BaseExperience || catch_chance < catch_threshold {
 		fmt.Printf("%s was caught!\n", pokemon_name)
+		cfg.caughtPokemon[pokemon_name] = pokemon_info
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon_name)
+	}
+
+	return nil
+}
+
+func commandInspect(cfg *config, args ...string) error {
+	if len(args) != 1 {
+		return errors.New("you have to enter a pokemon name to inspect it")
+	}
+
+	pokemon_name := args[0]
+	pokemon_info, ok := cfg.caughtPokemon[pokemon_name]
+	if !ok {
+		return errors.New("you have not caught that pokemon")
+	}
+
+	fmt.Printf("Name: %s\n", pokemon_info.Name)
+	fmt.Printf("Height: %v\n", pokemon_info.Height)
+	fmt.Printf("Weight: %v\n", pokemon_info.Weight)
+	fmt.Println("Stats:")
+	for _, stats := range pokemon_info.Stats {
+		fmt.Printf(" -%s: %v\n", stats.Stat.Name, stats.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, t := range pokemon_info.Types {
+		fmt.Printf(" - %s\n", t.Type.Name)
 	}
 
 	return nil
